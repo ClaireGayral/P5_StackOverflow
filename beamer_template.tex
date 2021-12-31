@@ -1,0 +1,75 @@
+%%%%%%%%%%%%%%%%%%%%
+%% theme of diapo %%
+%%%%%%%%%%%%%%%%%%%% 
+\usetheme{PaloAlto}
+\usecolortheme{seahorse}
+\addtobeamertemplate{footline}
+{%
+  \usebeamercolor[fg]{author in sidebar}
+  \vskip-1cm\hskip10pt
+  %\insertpagenumber\,/\,\insertpresentationendpage\kern1em\vskip2pt%
+  \insertframenumber\,/\,\inserttotalframenumber\kern1em\vskip2pt%
+}
+
+
+
+\setbeamertemplate{blocks}[rounded][shadow=true]
+%%%%title page
+\defbeamertemplate*{title page}{customized}[1][]
+{
+    \begin{center}
+    \usebeamerfont{title}\inserttitle\par
+  %\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par
+    \vfill
+    %   \begin{minipage}{0.48\textwidth}
+    %     \begin{center} 
+    %         \includegraphics[width=\linewidth]{logo_LBBE_UCBL_horizontal.png}
+    %     \end{center}
+    % \end{minipage}
+    % \begin{minipage}{0.01\textwidth}
+    %     \hfill
+    % \end{minipage}
+    % \begin{minipage}{0.48\textwidth}
+    % \end{minipage}
+    
+    
+    
+    \vfill
+    \insertauthor\par
+    \insertdate\par
+   \end{center}
+  }
+  
+%%%%% frame section
+\AtBeginSection[]
+{
+\begin{frame}<beamer>
+\frametitle{}
+\tableofcontents[
+  currentsection,currentsubsection
+  sectionstyle=show/shaded,
+  subsectionstyle=show/show/hide]
+\end{frame}
+}
+
+\beamertemplatenavigationsymbolsempty
+
+%%%%% footer
+\defbeamertemplate*{footline}{my footline}{
+% 	\leavevmode%
+	\hbox{%
+		\begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+			\usebeamerfont{author in head/foot}\insertshortauthor
+		\end{beamercolorbox}%
+		\begin{beamercolorbox}[wd=.6\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+			\usebeamerfont{title in head/foot}\insertshorttitle
+		\end{beamercolorbox}%
+		\begin{beamercolorbox}[wd=.1\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
+			\insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+	\end{beamercolorbox}}%
+	\vskip 0pt%
+    }
+%\beamertemplatenavigationsymbolsempty
+% \addto\captionsenglish{
+%   \renewcommand{\labelitemi}{$\textendash$$}
+% }

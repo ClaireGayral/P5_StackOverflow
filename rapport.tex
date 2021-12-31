@@ -1,0 +1,122 @@
+\documentclass{article}
+\input{preamble.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Projet 5 : Catégorisez automatiquement des questions}
+\author{Claire Gayral}
+\date{Août 2021}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tableofcontents
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Introduction}
+Stack Overflow, ce site utilisé presque quodiennement par la plupart des personnes amenées à écrire du code, n'est pas si simple à utiliser pour les novices d'un outil informatique, puisqu'il s'appuie sur un système de tags, issus d'une sémantique propre. L'idée du projet 5 de la formation "Ingénieur Machine Learning" d'OpenClassroom est justement de proposer une solution de suggestion de tags à partir de la question. Du nettoyage des données aux différents modèles d'apprentissage, en passant par les méthodes de réduction propres au text-mining, ce document présente le travail effectué pour répondre à cette problématique.
+
+\section{Analyse exploratoire}
+La première étape, quelque soit le modèle, va être de nettoyer les posts, et d'en extraire les mots pertinents. Pour l'approche supervisée, les tags formeront les classes à prédire, et pour l'approche non supervisée, les labels permettront de comparer les projections (les mots les plus importants pour chaque topics) et les tags proposés dans le poste. 
+
+
+\subsection{Choix des tags}
+Pour la modélisation supervisée, il est nécessaire de disposer des tags de sortie. Cependant, dans les posts de Stack Overflow, il y a plusieurs tags pour chaque sujet. Comme la classification multi-classe peut vite s'avérer complexe (problème de dimension, interprétabilité), il faut réduire la complexité des tags en entrée. 
+
+Un premier pré-traitement permet de limiter la perte d'information. Par exemple, les tags faisant références à différentes versions du même langage sont homogénéisés afin de limiter la perte d'information. Par ailleurs, les tags qui n'apparaissent que dans un post sont trop peu informatif, et ne seront pas conservés. 
+\subsubsection*{Choix d'une variable de sortie univariée}
+Pour une classification univariée, le choix le plus simple est de prendre le tag qui apparait le plus souvent. C'est ainsi que la classification supervisée univariée fera référence au tags "csharp"
+
+\subsubsection*{Réduction de dimension}
+Une première projection sur des axes choisis (NMF, PCA ou SVD) permet de vérifier s'il existe une structure algébrique qui permet de caractériserr la répartition des tags dans les posts. Ces méthodes de projection permettraient de contruire des méta-tags à partir des composantes. Cependant, même avec une régularisation Lasso, chaque dimension est soit très fortement tirée par un ou deux tags, soit avec une composition de beaucoup de tags différents. 
+
+TODO : Ajouter graphe NMF, PCA, SVD
+
+Ensuite, une réduction de dimension par regroupement en communauté permet de regrouper certains tags qui apparaissent dans plusieurs posts. 
+
+Un clustering hierarchique est alors plus pertinente : cette approche permet de choisir à postériori où tronquer l'arbre, pour obtenir suffisament peu de cluster, et garder des clusters qui ont un sens, et qui sont suffisamment représentés dans les données pour apprendre le lien avec le texte des posts. 
+
+TODO : ajouter clustering hierarchique 
+
+Par exemple, le cluster numéro 46 de la classification donnée par le tronquage de la ligne rouge (à 1.99) regroupe les termes suivant, faisant tous référence à la création de site web avec python : \\
+{\small \texttt{3des, active-directory, active-directory-group, activex, adam, android-emulator, apache2, app-config, asp.net-membership, assert, atl, authentication, authkit, authorization, azman, bho,  bouncycastle, center, certificate, code-snippets, cracking, crash,  crash-reports, credentials, cryptoapi, cryptographicexception,  cryptography, delegation, diffie-hellman, directoryservices,  distribution-list, distro, django, django-authentication,  django-models, django-templates, django-urls, django-users, dojo,  e-commerce, encryption, fastcgi, fcgid, firebug, firephp,  forms-authentication, gnu, gnupg, greasemonkey, http-authentication,  intellisense, internet-explorer, intranet, javascript-debugger,  jcifs, kerberos, key-events, key-storage, knowledge-management,  ldap, ldap-query, leaderboard, limits, login, logrotate,  mediawiki-extensions, membership, metabase, mode, ntlm, passphrase, passwords, payment, pci-dss, pdc, penetration-testing, pgo, pgp,  phpbb, precompiled-headers, protected, pylons, query-optimization,  ram-scraping, rest-security, roles, sam, sco-unix, security,  security-zone, segmentation-fault, shopping-cart, spn, ssl, sspi,  stack-trace, svn-administraton, symmetric-key, sysdba,  template-engine, text-align, tool-rec, web-config, wildcard-mapping,  x509, gplusplus}}\\
+
+Du clustering, j'extrait 12 clusters que mes connaissances informatiques permettaient d'identifier : \\
+{\small \texttt{ linux, language, microsoft, micro\_service, create\_website, python\_website, ruby, tests, python, computer\_architecture, multimedia, object\_oriented }}
+
+\subsection{Prétraitements de textes}
+
+Dans un premier temps, il fallait choisir une façon de représenter les mots, et en extraire leur sémantique. Pour cela, j'ai effectué un prétraitement contenant :\\
+% \vspace{0.3cm}
+
+Les différentes étapes sont illustrées sur la phrase suivante :
+\begin{minipage}{0.4\linewidth}
+    \begin{enumerate}
+        \item Changement de format et suppression de la ponctuation
+        
+        \item un filtre pour regrouper les différentes versions des langages de programmation
+        \item un retrait des mots de transition ou très présents (stop words)
+        \item une lemmatisation
+    \end{enumerate}
+\end{minipage}
+\hfill
+\begin{minipage}{0.5\linewidth}
+{\small 
+\texttt{%How to unload a ByteArray using Actionscript 3?\\
+<p>How do I forcefully unload a <code>ByteArray</code> from memory using ActionScript 3?</p>}
+
+\vspace{0.3cm}
+\hline
+\vspace{0.3cm}
+
+\texttt{%how, to, unload, a, bytearray, using, actionscript, 
+how, do, i, forcefully, unload, a, bytearray, from, memory, using, actionscript'
+}
+
+\vspace{0.4cm}
+\hline
+\vspace{0.4cm}
+
+\texttt{%unload, bytearray, actionscript,
+forcefully, unload, bytearray, memory, actionscript
+}
+
+\vspace{0.45cm}
+\hline
+\vspace{0.45cm}
+
+\texttt{%unload, bytearray, actionscript,
+forc, unload, bytearray, memori, actionscript}
+}
+\end{minipage}
+
+De cet ensemble de tokens, il fallait choisir une représentation. Il en existent plusieurs :
+\subsection{Plongements de mots}
+\subsubsection*{bag of words}
+\subsubsection*{tfidf}
+\subsubsection*{word2vec}
+
+
+\section{Modélisation non supervisée}
+\subsection{Différents modèles statistiques}
+\subsubsection*{Kmeans et NMF}
+\subsubsection*{LDA}
+
+\subsubsection*{BERT}
+\subsection{Projection sur les tags}
+
+
+\section{Modélisation supervisée}
+\subsection{Naive Bayes}
+\subsection{Gradient Boosting }
+adapter la métrique
+
+\section{Choix du modèle et déploiement}
+\subsection{Tests}
+\subsection{Manuel d'utilisation}
+
+\section*{Conclusion}
+
+\end{document}  
