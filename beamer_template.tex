@@ -1,3 +1,6 @@
+
+\usepackage{geometry}
+
 %%%%%%%%%%%%%%%%%%%%
 %% theme of diapo %%
 %%%%%%%%%%%%%%%%%%%% 
@@ -18,25 +21,21 @@
 \defbeamertemplate*{title page}{customized}[1][]
 {
     \begin{center}
-    \usebeamerfont{title}\inserttitle\par
-  %\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par
+    
+    \usebeamerfont{title}
+    {\LARGE \inserttitle\par}
+    
+   
     \vfill
-    %   \begin{minipage}{0.48\textwidth}
-    %     \begin{center} 
-    %         \includegraphics[width=\linewidth]{logo_LBBE_UCBL_horizontal.png}
-    %     \end{center}
-    % \end{minipage}
-    % \begin{minipage}{0.01\textwidth}
-    %     \hfill
-    % \end{minipage}
-    % \begin{minipage}{0.48\textwidth}
-    % \end{minipage}
-    
-    
+     \begin{center}
+        \includegraphics[width = 0.5\linewidth ]{illustrations/logo_stackoverflow.png}
+        \hspace{0.5cm}
+    \end{center}   
     
     \vfill
-    \insertauthor\par
-    \insertdate\par
+    { \Large \insertauthor\par}
+    \vfill
+    {\large \insertdate\par}
    \end{center}
   }
   
@@ -45,12 +44,41 @@
 {
 \begin{frame}<beamer>
 \frametitle{}
-\tableofcontents[
-  currentsection,currentsubsection
-  sectionstyle=show/shaded,
-  subsectionstyle=show/show/hide]
+% \tableofcontents[
+% %   currentsection,currentsubsection
+%   currentsubsection,hideothersubsections,
+% %   sectionstyle=show/show/shaded,
+% %   subsectionstyle=show/show/hide]
+%   sectionstyle=show/shaded,
+%   subsectionstyle=show/show/
+% ]
+\tableofcontents[currentsection,currentsubsection, 
+    hideothersubsections, 
+    sectionstyle=show/shaded,
+]
 \end{frame}
 }
+
+\newif\iflattersubsect
+
+\AtBeginSection[] {
+    \begin{frame}<beamer>
+    \frametitle{} %
+    \tableofcontents[currentsection]  
+    \end{frame}
+    \lattersubsectfalse
+}
+
+\AtBeginSubsection[] {
+    \iflattersubsect
+    \begin{frame}<beamer>
+    \frametitle{} %
+    \tableofcontents[currentsubsection]  
+    \end{frame}
+    \fi
+    \lattersubsecttrue
+}
+
 
 \beamertemplatenavigationsymbolsempty
 
